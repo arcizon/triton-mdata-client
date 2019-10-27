@@ -53,7 +53,19 @@ publishing {
             artifact sourcesJar
             artifact scaladocJar
 
+            signArchives.signatures.each { signature ->
+                artifact(signature) {
+                    extension signature.type
+                }
+            }
+
+            artifact(file("$buildDir/publications/mavenScala/pom-default.xml.asc")) {
+                extension 'pom.asc'
+                builtBy signArchives
+            }
+
             pom {
+                packaging = 'jar'
                 description = 'Scala based wrapper for Joyent Triton mdata-client'
                 name = 'Joyent Triton metadata client for Scala'
                 url = 'https://github.com/arcizon/triton-mdata-client'
@@ -89,13 +101,27 @@ publishing {
     }
     repositories {
         maven {
-            def releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2"
-            def snapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots"
+            def releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+            def snapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots/"
             url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
             credentials {
                 username = sonatypeUsername
                 password = sonatypePassword
             }
         }
+    }
+}
+
+model {
+    tasks.publishMavenScalaPublicationToMavenLocal {
+        dependsOn project.tasks.signArchives
+    }
+    tasks.publishMavenScalaPublicationToMavenRepository {
+        dependsOn project.tasks.signArchives
+    }
+
+    tasks.generatePomFileForMavenScalaPublication {
+        signArchives.dependsOn it
+        signArchives.sign it.outputs.files.singleFile
     }
 }
