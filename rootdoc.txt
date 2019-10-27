@@ -1,0 +1,9 @@
+This is the documentation for the Joyent Triton MData Client for Scala.
+
+== Driver structure ==
+
+The [[https://www.joyent.com/triton/compute Joyent Triton]] [[https://github.com/joyent/mdata-client mdata-client]] for Scala.
+
+Notable packages include:
+
+    - [[com.github.arcizon.triton.MDataClient MDataClient]] The MDataClient used to interact with instance metadata.

@@ -10,7 +10,7 @@ import scala.util.Try
  *
  * @constructor creates a new MDataClient connector instance
  * @param processLogger A log handler to log stdout and stderr events of the processes
- * @param binPath A prefix path for the mdata executable binaries, if they are not present in current PATH scope
+ * @param binPath       A prefix path for the mdata executable binaries, if they are not present in current PATH scope
  * @see [[https://github.com/joyent/mdata-client mdata-client]] for information on Joyent Triton mdata-client
  */
 class MDataClient(processLogger: ProcessLogger, binPath: String) {
@@ -42,7 +42,10 @@ class MDataClient(processLogger: ProcessLogger, binPath: String) {
   def put(key: String, value: String): Boolean = {
     require(key.nonEmpty, "key argument can't be empty!!")
     require(value.nonEmpty, "value argument can't be empty!!")
-    if (Process(mdata_put_cmd, Seq(key, value)).run(processLogger).exitValue() == 0) true else false
+    if (Process(mdata_put_cmd, Seq(key, value))
+      .run(processLogger)
+      .exitValue() == 0) true
+    else false
   }
 
   /**
@@ -66,7 +69,10 @@ class MDataClient(processLogger: ProcessLogger, binPath: String) {
     if (!listKeys().contains(key)) {
       false
     } else {
-      if (Process(mdata_delete_cmd, Seq(key)).run(processLogger).exitValue() == 0) true else false
+      if (Process(mdata_delete_cmd, Seq(key))
+        .run(processLogger)
+        .exitValue() == 0) true
+      else false
     }
   }
 
@@ -116,7 +122,8 @@ class MDataClient(processLogger: ProcessLogger, binPath: String) {
    * @return a list of instance metadata keys
    * @see [[https://smartos.org/man/1M/mdata-list mdata-list]] for more information on mdata-list command
    */
-  def listKeys(): List[String] = Process(mdata_list_cmd).lineStream(processLogger).toList
+  def listKeys(): List[String] =
+    Process(mdata_list_cmd).lineStream(processLogger).toList
 
   /**
    * `get` method calls '''mdata-get''' binary as child process and returns the output as an optional string
@@ -137,7 +144,8 @@ class MDataClient(processLogger: ProcessLogger, binPath: String) {
    */
   def get(key: String): Option[String] = {
     require(key.nonEmpty, "key argument can't be empty!!")
-    Try(Process(mdata_get_cmd, Seq(key)).lineStream(processLogger).headOption).getOrElse(None)
+    Try(Process(mdata_get_cmd, Seq(key)).lineStream(processLogger).headOption)
+      .getOrElse(None)
   }
 }
 
@@ -145,6 +153,7 @@ class MDataClient(processLogger: ProcessLogger, binPath: String) {
  * Factory for `MDataClient` instance to perform metadata operations on instance
  */
 object MDataClient {
+
   /**
    * Creates a `MDataClient` instance with the binPath is set to empty on default assuming the binaries are in PATH
    * and printing stdout and stderr to console
@@ -158,7 +167,8 @@ object MDataClient {
    * mdataClient: com.github.arcizon.triton.MDataClient = com.github.arcizon.triton.MDataClient@269f4bad
    * }}}
    */
-  def apply(binPath: String = ""): MDataClient = apply(o => println(o), e => println(e), binPath)
+  def apply(binPath: String = ""): MDataClient =
+    apply(o => println(o), e => println(e), binPath)
 
   /**
    * Creates a `MDataClient` instance with provided log handlers for stdout and stderr
@@ -179,7 +189,11 @@ object MDataClient {
    * mdataClient: com.github.arcizon.triton.MDataClient = com.github.arcizon.triton.MDataClient@269f4bad
    * }}}
    */
-  def apply(stdout: String => Unit, stderr: String => Unit, binPath: String): MDataClient = apply(
+  def apply(
+             stdout: String => Unit,
+             stderr: String => Unit,
+             binPath: String
+           ): MDataClient = apply(
     ProcessLogger(stdout, stderr),
     binPath
   )
@@ -188,8 +202,8 @@ object MDataClient {
    * Creates a `MDataClient` instance with provided binPath
    *
    * @param processLogger A log handler to log stdout and stderr events of the processes
-   * @param binPath A prefix path for the mdata-* executable binaries, if they are not present in current PATH scope
-   *                default to empty string assuming it is in current PATH scope.
+   * @param binPath       A prefix path for the mdata-* executable binaries, if they are not present in current PATH scope
+   *                      default to empty string assuming it is in current PATH scope.
    * @return a [[MDataClient]] instance
    *
    * {{{
@@ -203,5 +217,6 @@ object MDataClient {
    * mdataClient: com.github.arcizon.triton.MDataClient = com.github.arcizon.triton.MDataClient@269f4bad
    * }}}
    */
-  def apply(processLogger: ProcessLogger, binPath: String): MDataClient = new MDataClient(processLogger, binPath)
+  def apply(processLogger: ProcessLogger, binPath: String): MDataClient =
+    new MDataClient(processLogger, binPath)
 }
