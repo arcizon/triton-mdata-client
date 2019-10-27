@@ -9,10 +9,11 @@
 plugins {
     id 'idea'
     id 'scala'
-    id 'maven-publish'
-    id 'signing'
     id 'com.github.maiflai.scalatest' version '0.25'
     id 'com.diffplug.gradle.spotless' version '3.25.0'
+    id 'maven-publish'
+    id 'signing'
+    id 'io.codearte.nexus-staging' version '0.21.1'
 }
 
 sourceCompatibility = '1.8'
@@ -126,11 +127,15 @@ publishing {
             def snapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots/"
             url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
             credentials {
-                username = sonatypeUsername
-                password = sonatypePassword
+                username = nexusUsername
+                password = nexusPassword
             }
         }
     }
+}
+
+nexusStaging {
+    stagingRepositoryId = 'comgithubarcizon-1005'
 }
 
 model {
