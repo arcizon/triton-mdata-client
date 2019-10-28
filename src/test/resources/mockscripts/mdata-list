@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+mock_keys=(root_authorized_keys lifecycle component)
+
+printf "%s\n" "${mock_keys[@]}"

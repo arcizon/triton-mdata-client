@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+if [ "$#" -ne 1 ];
+then
+  >&2 echo "mdata-get: Usage: mdata-get <keyname>"
+  exit 3
+fi;
+
+key="$1"
+
+case $key in
+  lifecycle) echo "test";;
+  component) echo "demo";;
+  *) >&2 echo "No metadata for '$key'"
+    exit 1
+esac

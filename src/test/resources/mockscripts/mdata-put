@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+if [ "$#" -eq 0 ];
+then
+  >&2 echo "mdata-put: Usage: mdata-put <keyname>"
+  exit 3
+elif [ "$#" -eq 1 ];
+then
+  >&2 echo "ERROR: either specify the metadata value as the second command-line argument, or pipe content to stdin."
+  exit 2
+elif [ "$#" -eq 2 ];
+then
+  exit 0
+else
+  exit 1
+fi;
