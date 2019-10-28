@@ -9,9 +9,21 @@
 plugins {
     id 'idea'
     id 'scala'
+    id 'com.github.maiflai.scalatest' version '0.25'
+    id 'com.diffplug.gradle.spotless' version '3.25.0'
     id 'maven-publish'
     id 'signing'
-    id 'com.github.maiflai.scalatest' version '0.25'
+    id 'io.codearte.nexus-staging' version '0.21.1'
+}
+
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
+
+idea {
+    project {
+        languageLevel = '1.8'
+        vcs = 'Git'
+    }
 }
 
 repositories {
@@ -37,9 +49,19 @@ task scaladocJar(type: Jar, dependsOn: scaladoc) {
     from scaladoc
 }
 
+spotless {
+    scala {
+        scalafmt()
+    }
+}
+
+scaladoc {
+    title = "Triton MData Scala Client v${project.version} API"
+    scalaDocOptions.setAdditionalParameters(["-doc-root-content", "rootdoc.txt"])
+}
+
 artifacts {
-    archives sourcesJar
-    archives scaladocJar
+    archives sourcesJar, scaladocJar
 }
 
 signing {
@@ -53,9 +75,21 @@ publishing {
             artifact sourcesJar
             artifact scaladocJar
 
+            signArchives.signatures.each { signature ->
+                artifact(signature) {
+                    extension signature.type
+                }
+            }
+
+            artifact(file("$buildDir/publications/mavenScala/pom-default.xml.asc")) {
+                extension 'pom.asc'
+                builtBy signArchives
+            }
+
             pom {
+                packaging = 'jar'
                 description = 'Scala based wrapper for Joyent Triton mdata-client'
-                name = 'Joyent Triton metadata client for Scala'
+                name = 'Joyent Triton MData Scala Client'
                 url = 'https://github.com/arcizon/triton-mdata-client'
                 organization {
                     name = 'com.github.arcizon'
@@ -89,13 +123,31 @@ publishing {
     }
     repositories {
         maven {
-            def releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2"
-            def snapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots"
+            def releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+            def snapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots/"
             url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
             credentials {
-                username = sonatypeUsername
-                password = sonatypePassword
+                username = nexusUsername
+                password = nexusPassword
             }
         }
+    }
+}
+
+nexusStaging {
+    stagingRepositoryId = 'comgithubarcizon-1005'
+}
+
+model {
+    tasks.publishMavenScalaPublicationToMavenLocal {
+        dependsOn project.tasks.signArchives
+    }
+    tasks.publishMavenScalaPublicationToMavenRepository {
+        dependsOn project.tasks.signArchives
+    }
+
+    tasks.generatePomFileForMavenScalaPublication {
+        signArchives.dependsOn it
+        signArchives.sign it.outputs.files.singleFile
     }
 }
