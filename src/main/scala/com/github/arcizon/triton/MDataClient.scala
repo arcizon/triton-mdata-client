@@ -88,7 +88,13 @@ class MDataClient(processLogger: ProcessLogger, binPath: String) {
     *
     * @return an Unit
     */
-  def loadToSystemProperties(): Unit = System.setProperties(asProperties())
+  def loadToSystemProperties(): Unit = {
+    val props: Properties = new Properties()
+    props.putAll(System.getProperties)
+    props.putAll(asProperties())
+
+    System.setProperties(props)
+  }
 
   /**
     * `asProperties` method returns the instance metadata in the form of java ''Properties'' instance
